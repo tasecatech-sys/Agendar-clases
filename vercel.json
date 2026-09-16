@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/agendar-clase.html" }
+  ],
+  "redirects": [
+    { "source": "/mi-avance.html", "destination": "/agendar-clase.html#avance", "permanent": false },
+    { "source": "/mi-avance", "destination": "/agendar-clase.html#avance", "permanent": false }
+  ]
+}
