@@ -38,7 +38,7 @@ linear-gradient(160deg,#12172b,#1b2140);
 #screen-agendar .class-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px;}
 #screen-agendar .class-opt{border:1.5px solid var(--border);border-radius:11px;padding:14px;cursor:pointer;text-align:center;}
 #screen-agendar .class-opt.selected{border-color:var(--accent);background:#f1f1ff;}
-#screen-agendar .class-opt .t{font-weight:700;font-size:13.5px;}
+#screen-agendar .class-opt .t{font-weight:700;font-size:13.5px;color:#111827;}
 #screen-agendar .class-opt .s{font-size:11px;color:var(--text-dim);margin-top:3px;}
 #screen-agendar .slots-day{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--accent);margin:14px 0 8px;}
 #screen-agendar .slots-day:first-child{margin-top:0;}
@@ -235,6 +235,21 @@ return;
 }
 
 estudianteVerificado = { documento: doc, nombre: data.nombre, email: data.email, telefono: data.telefono };
+// Mostrar solo las clases en las que el estudiante está inscrito
+const permitidas = Array.isArray(data.plataformas) ? data.plataformas : [];
+plataforma = null; franjaSeleccionada = null;
+document.getElementById('slotsSection').style.display = 'none';
+document.getElementById('claseForm').style.display = 'none';
+document.querySelectorAll('.class-opt').forEach(o => {
+  o.classList.remove('selected');
+  o.style.display = permitidas.includes(o.dataset.plat) ? '' : 'none';
+});
+if (permitidas.length === 1) {
+  const unica = document.querySelector(`.class-opt[data-plat="${permitidas[0]}"]`);
+  if (unica) unica.click();
+} else if (!permitidas.length) {
+  setTimeout(() => showMsg('Aún no tienes clases habilitadas. Escríbenos y te ayudamos.', 'error'), 0);
+}
 
 document.getElementById('formMsg').className = 'msg';
 document.getElementById('verifyStep').style.display = 'none';
