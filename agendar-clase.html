@@ -218,6 +218,34 @@ el.textContent = text;
 el.className = 'msg show ' + type;
 }
 
+// Estudiantes que solo pueden agendar ciertas clases.
+// La clave es el SHA-256 del documento (así la cédula no queda visible en el código).
+// Quien no esté en esta lista ve todas las clases.
+const RESTRICCIONES_PLATAFORMA = {
+  '96991e79b9908c2b8c88790d2024e9bff38fae50a7df3b1f81bd5f333f512339': ['powerbi'],
+};
+
+async function sha256(txt){
+const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));
+return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function aplicarRestriccionPlataformas(doc){
+let permitidas = null;
+try { permitidas = RESTRICCIONES_PLATAFORMA[await sha256(doc)] || null; } catch(e) { permitidas = null; }
+plataforma = null; franjaSeleccionada = null;
+document.getElementById('slotsSection').style.display = 'none';
+document.getElementById('claseForm').style.display = 'none';
+document.querySelectorAll('.class-opt').forEach(o=>{
+o.classList.remove('selected');
+o.style.display = (!permitidas || permitidas.includes(o.dataset.plat)) ? '' : 'none';
+});
+if (permitidas && permitidas.length === 1) {
+const unica = document.querySelector('.class-opt[data-plat="' + permitidas[0] + '"]');
+if (unica) unica.click();
+}
+}
+
 async function verificarDocumento(){
 const doc = document.getElementById('v_documento').value.trim();
 if(!doc){ showMsg('Escribe tu número de documento.', 'error'); return; }
@@ -239,6 +267,7 @@ estudianteVerificado = { documento: doc, nombre: data.nombre, email: data.email,
 document.getElementById('formMsg').className = 'msg';
 document.getElementById('verifyStep').style.display = 'none';
 document.getElementById('bookingSteps').style.display = 'block';
+await aplicarRestriccionPlataformas(doc);
 document.getElementById('studentCard').innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;background:#f1f1ff;border-radius:11px;padding:12px 14px;margin-bottom:22px;"><div><div style="font-weight:700;font-size:13.5px;">' + esc(data.nombre) + '</div><div style="font-size:12px;color:var(--text-dim);margin-top:2px;">' + esc(data.email||'') + (data.telefono ? ' &middot; ' + esc(data.telefono) : '') + '</div></div><button type="button" id="btnCambiarDoc" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;">Cambiar</button></div>';
 
 document.getElementById('btnCambiarDoc').addEventListener('click', ()=>{
