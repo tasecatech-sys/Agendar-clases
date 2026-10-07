@@ -342,6 +342,11 @@ const NOTIFY_FUNCTION_URL = ''; // Ej: 'https://xxxxxxxx.supabase.co/functions/v
 // reservar_franja_v2 lo devuelve como reserva.profesorWhatsapp. Si
 // ese profesor no tiene n\u00famero guardado, no se muestra el bot\u00f3n.
 
+// WhatsApp de notificaci\u00f3n por plataforma (con indicativo 57 de Colombia).
+const WHATSAPP_POR_PLATAFORMA = { excel: '573223210316', powerbi: '573105667173' };
+// Respaldo: n\u00famero del profesor guardado en el panel, normalizado a formato wa.me.
+const normalizarWa = n => { let d = String(n||'').replace(/\D/g,''); return d.length === 10 ? '57' + d : d; };
+
 function notificarProfesor(reserva, estudiante){
 const detalle = 'Nueva clase agendada:\n' + estudiante.nombre + ' (CC ' + estudiante.documento + ')\n' +
 (reserva.plataforma === 'excel' ? 'Excel' : 'Power BI') + ' \u00b7 ' + fechaLarga(reserva.fecha) + ' a las ' + reserva.hora;
@@ -361,10 +366,9 @@ hora: reserva.hora,
 }).catch(err => console.error('No se pudo notificar por correo:', err));
 }
 
-if(reserva.profesorWhatsapp){
-const waUrl = 'https://wa.me/' + reserva.profesorWhatsapp + '?text=' + encodeURIComponent(detalle);
-window.open(waUrl, '_blank');
-return waUrl;
+const numero = WHATSAPP_POR_PLATAFORMA[reserva.plataforma] || normalizarWa(reserva.profesorWhatsapp);
+if(numero){
+return 'https://wa.me/' + numero + '?text=' + encodeURIComponent(detalle);
 }
 return null;
 }
